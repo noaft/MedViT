@@ -433,7 +433,6 @@ def main(args):
                 y_true.extend(targets.cpu().numpy())
                 y_pred.extend(predicted.cpu().numpy())
                 y_score.extend(probabilities.cpu().numpy())
-            conf_matrix = get_confusion_matrix(model, data_loader_val, num_classes)
         y_score = np.array(y_score)
         metrics = calculate_metrics(y_true, y_pred, y_score)
         metrics_history.append(metrics)
