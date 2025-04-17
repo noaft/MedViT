@@ -507,29 +507,29 @@ class MedViT(nn.Module):
         x = self.proj_head(x)
         return x
 
-class Extract_features(nn.Module):
-    def __init__(self, in_channels, out_channels):
-        super(Extract_features, self).__init__()
-        self.in_channels = in_channels
-        self.out_channels = out_channels
-        self.conv1 = torch.nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1)
-        self.conv2 = torch.nn.Conv2d(16, 32, kernel_size=3, stride=1, padding=1)
-        self.ReLU = torch.nn.ReLU()
-        self.maxpool = torch.nn.MaxPool2d(kernel_size=2, stride=2)
-        self.conv3 = torch.nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
-        self.flatten = torch.nn.Flatten()
-        self.nn = torch.nn.Linear(in_features=10, out_features=out_features)
+# class Extract_features(nn.Module):
+#     def __init__(self, in_channels, out_channels):
+#         super(Extract_features, self).__init__()
+#         self.in_channels = in_channels
+#         self.out_channels = out_channels
+#         self.conv1 = torch.nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1)
+#         self.conv2 = torch.nn.Conv2d(16, 32, kernel_size=3, stride=1, padding=1)
+#         self.ReLU = torch.nn.ReLU()
+#         self.maxpool = torch.nn.MaxPool2d(kernel_size=2, stride=2)
+#         self.conv3 = torch.nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
+#         self.flatten = torch.nn.Flatten()
+#         self.nn = torch.nn.Linear(in_features=10, out_features=out_features)
 
-    def forward(self, x):
-        x = self.conv1(x)
-        x = self.ReLU(x)
-        x = self.maxpool(x)
-        x = self.conv2(x)
-        x = self.ReLU(x)
-        x = self.maxpool(x)
-        x = self.conv3(x)
-        x = self.flatten(x)
-        return x
+#     def forward(self, x):
+#         x = self.conv1(x)
+#         x = self.ReLU(x)
+#         x = self.maxpool(x)
+#         x = self.conv2(x)
+#         x = self.ReLU(x)
+#         x = self.maxpool(x)
+#         x = self.conv3(x)
+#         x = self.flatten(x)
+#         return x
 
 @register_model
 def MedViT_small(pretrained=False, pretrained_cfg=None, pretrained_cfg_overlay= None, **kwargs):
