@@ -416,7 +416,7 @@ class MedViT(nn.Module):
         super(MedViT, self).__init__()
         self.use_checkpoint = use_checkpoint
         
-        self.cnn = Extract_features()
+        # self.cnn = Extract_features()
         
         self.stage_out_channels = [[96] * (depths[0]),
                                    [192] * (depths[1] - 1) + [256],
