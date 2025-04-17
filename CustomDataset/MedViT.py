@@ -416,6 +416,7 @@ class MedViT(nn.Module):
         super(MedViT, self).__init__()
         self.use_checkpoint = use_checkpoint
         
+        self.cnn = Extract_features()
         
         self.stage_out_channels = [[96] * (depths[0]),
                                    [192] * (depths[1] - 1) + [256],
@@ -428,6 +429,7 @@ class MedViT(nn.Module):
                                   [ECB, ECB, ECB, ECB, LTB] * (depths[2] // 5),
                                   [ECB] * (depths[3] - 1) + [LTB]]
 
+        
         self.stem = nn.Sequential(
             ConvBNReLU(3, stem_chs[0], kernel_size=3, stride=2),
             ConvBNReLU(stem_chs[0], stem_chs[1], kernel_size=3, stride=1),
@@ -496,6 +498,7 @@ class MedViT(nn.Module):
 
     def forward(self, x):
         x = self.stem(x)
+        x_add = self.cnn(x)
         for idx, layer in enumerate(self.features):
             if self.use_checkpoint:
                 x = checkpoint.checkpoint(layer, x)
@@ -504,32 +507,40 @@ class MedViT(nn.Module):
         x = self.norm(x)
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
+        x = torch.cat((x, x_add), dim=1)
         x = self.proj_head(x)
         return x
 
-# class Extract_features(nn.Module):
-#     def __init__(self, in_channels, out_channels):
-#         super(Extract_features, self).__init__()
-#         self.in_channels = in_channels
-#         self.out_channels = out_channels
-#         self.conv1 = torch.nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1)
-#         self.conv2 = torch.nn.Conv2d(16, 32, kernel_size=3, stride=1, padding=1)
-#         self.ReLU = torch.nn.ReLU()
-#         self.maxpool = torch.nn.MaxPool2d(kernel_size=2, stride=2)
-#         self.conv3 = torch.nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
-#         self.flatten = torch.nn.Flatten()
-#         self.nn = torch.nn.Linear(in_features=10, out_features=out_features)
+class Extract_features(nn.Module):
+    def __init__(self):
+        super(Extract_features, self).__init__()
+    
+        self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1)
+        self.conv2 = nn.Conv2d(16, 32, kernel_size=3, stride=1, padding=1)
+        self.conv3 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
+        
+        self.relu = nn.ReLU()
+        self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.flatten = nn.Flatten()
+        
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.relu(x)
+        x = self.maxpool(x)
 
-#     def forward(self, x):
-#         x = self.conv1(x)
-#         x = self.ReLU(x)
-#         x = self.maxpool(x)
-#         x = self.conv2(x)
-#         x = self.ReLU(x)
-#         x = self.maxpool(x)
-#         x = self.conv3(x)
-#         x = self.flatten(x)
-#         return x
+        x = self.conv2(x)
+        x = self.relu(x)
+        x = self.maxpool(x)
+
+        x = self.conv3(x)
+        x = self.relu(x)
+        x = self.maxpool(x)
+
+        x = self.flatten(x)
+
+        
+        return x
+
 
 @register_model
 def MedViT_small(pretrained=False, pretrained_cfg=None, pretrained_cfg_overlay= None, **kwargs):
