@@ -518,7 +518,7 @@ class Extract_features(nn.Module):
         self.maxpool = torch.nn.MaxPool2d(kernel_size=2, stride=2)
         self.conv3 = torch.nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
         self.flatten = torch.nn.Flatten()
-        self.nn = torch.nn.Linear(in_features=, out_features=out_features)
+        self.nn = torch.nn.Linear(in_features=10, out_features=out_features)
 
     def forward(self, x):
         x = self.conv1(x)
