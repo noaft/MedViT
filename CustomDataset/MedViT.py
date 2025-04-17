@@ -515,9 +515,7 @@ class Extract_features(nn.Module):
     def __init__(self):
         super(Extract_features, self).__init__()
     
-        self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1)
-        self.conv2 = nn.Conv2d(16, 32, kernel_size=3, stride=1, padding=1)
-        self.conv3 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
+        self.conv1 = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
         
         self.relu = nn.ReLU()
         self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
@@ -528,16 +526,7 @@ class Extract_features(nn.Module):
         x = self.relu(x)
         x = self.maxpool(x)
 
-        x = self.conv2(x)
-        x = self.relu(x)
-        x = self.maxpool(x)
-
-        x = self.conv3(x)
-        x = self.relu(x)
-        x = self.maxpool(x)
-
         x = self.flatten(x)
-
         
         return x
 
