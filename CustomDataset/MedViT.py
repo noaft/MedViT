@@ -468,9 +468,33 @@ class MedViT(nn.Module):
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.proj_head = nn.Sequential(
-            nn.Linear(output_channel, 64),
-            nn.Linear(64, num_classes),
-        )
+                        nn.Linear(1024, 512),
+                        nn.BatchNorm1d(512),
+                        nn.ReLU(),
+
+                        nn.Linear(512, 256),
+                        nn.BatchNorm1d(256),
+                        nn.ReLU(),
+
+                        nn.Linear(256, 128),
+                        nn.BatchNorm1d(128),
+                        nn.ReLU(),
+
+                        nn.Linear(128, 64),
+                        nn.BatchNorm1d(64),
+                        nn.ReLU(),
+
+                        nn.Linear(64, 32),
+                        nn.BatchNorm1d(32),
+                        nn.ReLU(),
+
+                        nn.Linear(32, 16),
+                        nn.BatchNorm1d(16),
+                        nn.ReLU(),
+
+                        nn.Linear(16, num_classes)  # Output cuối cùng
+                    )
+
 
         self.stage_out_idx = [sum(depths[:idx + 1]) - 1 for idx in range(len(depths))]
         print('initialize_weights...')
@@ -497,7 +521,7 @@ class MedViT(nn.Module):
                     nn.init.constant_(m.bias, 0)
 
     def forward(self, x):
-        x_add = self.cnn(x)
+        # x_add = self.cnn(x)
         x = self.stem(x)
         for idx, layer in enumerate(self.features):
             if self.use_checkpoint:
@@ -507,7 +531,7 @@ class MedViT(nn.Module):
         x = self.norm(x)
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
-        x = torch.cat((x, x_add), dim=1)
+        # x = torch.cat((x, x_add), dim=1)
         x = self.proj_head(x)
         return x
 
