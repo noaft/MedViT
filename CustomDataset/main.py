@@ -29,6 +29,8 @@ from chart import BarChart, Line
 from metrics import calculate_metrics, plot_metrics_bar, plot_metrics_line, plot_confusion_matrix, plot_roc_curve, plot_precision_recall_curve
 from sklearn.metrics import confusion_matrix
 import torch
+from feature_extractor import extract_features, create_classifier
+
 def get_confusion_matrix(model, dataloader, num_classes):
     model.eval()
     all_preds = []
@@ -284,7 +286,11 @@ def main(args):
     print(f"Creating model: {args.model}")
     model = create_model(
         args.model,
+        pretrained=args.pretrained,
         num_classes=args.nb_classes,
+        drop_rate=args.drop,
+        drop_path_rate=args.drop_path,
+        drop_block_rate=None,
     )
     num_classes=args.nb_classes
     if not args.distributed or args.rank == 0:
@@ -399,7 +405,7 @@ def main(args):
             model, criterion, data_loader_train,
             optimizer, device, epoch, loss_scaler,
             args.clip_grad, model_ema, mixup_fn,
-            set_training_mode=True,
+            set_training_mode=args.finetune == '',  # keep in eval mode during finetuning
         )
 
         lr_scheduler.step(epoch)
@@ -415,26 +421,14 @@ def main(args):
                     'args': args,
                 }, checkpoint_path)
 
-        test_stats = evaluate(data_loader_val, model, device)
+        test_stats, y_true, y_pred, y_score = evaluate(data_loader_val, model, device)
 
         print(f"Accuracy of the network on the {len(dataset_val)} test images: {test_stats['acc1']:.1f}%")
         # Calculate and store metrics
-        y_true = []
-        y_pred = []
-        y_score = []
-        model.eval()
-        with torch.no_grad():
-            for images, targets in data_loader_val:
-                images = images.to(device, non_blocking=True)
-                targets = targets.to(device, non_blocking=True)
-                outputs = model(images)
-                probabilities = torch.softmax(outputs, dim=1)
-                _, predicted = torch.max(outputs.data, 1)
-                y_true.extend(targets.cpu().numpy())
-                y_pred.extend(predicted.cpu().numpy())
-                y_score.extend(probabilities.cpu().numpy())
-        y_score = np.array(y_score)
-        metrics = calculate_metrics(y_true, y_pred, y_score)
+        y_true_all = y_true
+        y_pred_all = y_pred
+        y_score_all = y_score
+        metrics = calculate_metrics(y_true_all, y_pred_all, y_score_all)
         metrics_history.append(metrics)
         
         # Store all predictions for final evaluation

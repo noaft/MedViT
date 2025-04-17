@@ -415,7 +415,8 @@ class MedViT(nn.Module):
                  use_checkpoint=False):
         super(MedViT, self).__init__()
         self.use_checkpoint = use_checkpoint
-
+        
+        
         self.stage_out_channels = [[96] * (depths[0]),
                                    [192] * (depths[1] - 1) + [256],
                                    [384, 384, 384, 384, 512] * (depths[2] // 5),
@@ -465,7 +466,8 @@ class MedViT(nn.Module):
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.proj_head = nn.Sequential(
-            nn.Linear(output_channel, num_classes),
+            nn.Linear(output_channel, 64),
+            nn.Linear(64, num_classes),
         )
 
         self.stage_out_idx = [sum(depths[:idx + 1]) - 1 for idx in range(len(depths))]
@@ -505,6 +507,29 @@ class MedViT(nn.Module):
         x = self.proj_head(x)
         return x
 
+class Extract_features(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super(Extract_features, self).__init__()
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.conv1 = torch.nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1)
+        self.conv2 = torch.nn.Conv2d(16, 32, kernel_size=3, stride=1, padding=1)
+        self.ReLU = torch.nn.ReLU()
+        self.maxpool = torch.nn.MaxPool2d(kernel_size=2, stride=2)
+        self.conv3 = torch.nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
+        self.flatten = torch.nn.Flatten()
+        self.nn = torch.nn.Linear(in_features=, out_features=out_features)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.ReLU(x)
+        x = self.maxpool(x)
+        x = self.conv2(x)
+        x = self.ReLU(x)
+        x = self.maxpool(x)
+        x = self.conv3(x)
+        x = self.flatten(x)
+        return x
 
 @register_model
 def MedViT_small(pretrained=False, pretrained_cfg=None, pretrained_cfg_overlay= None, **kwargs):
