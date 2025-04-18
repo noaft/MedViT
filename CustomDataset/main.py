@@ -327,6 +327,7 @@ def main(args):
     )
     
     log_acc = []
+    log_acc_train = []
     loss_acc = []
     metrics_history = []  # Track metrics over time
     y_true_all = []
@@ -464,6 +465,7 @@ def main(args):
             with (output_dir / "log.txt").open("a") as f:
                 f.write(json.dumps(log_stats) + "\n")
         log_acc.append(test_stats["acc1"])
+        log_acc_train.append(train_stats["acc1"])
         loss_acc.append(train_stats['loss'])
 
     total_time = time.time() - start_time
@@ -490,7 +492,8 @@ def main(args):
     
     # Plot loss and accuracy
     Line(loss_acc, Title="Loss", X_label='Epoch', Y_label='Loss', color='skyblue', name="loss.png")
-    Line(log_acc, Title="Accuracy", X_label='Epoch', Y_label='Accuracy', color='skyblue', name="accuracy.png")
+    Line(log_acc, Title="Accuracy", X_label='Epoch', Y_label='Accuracy', color='skyblue', name="accuracy_test.png")
+    Line(log_acc, Title="Accuracy", X_label='Epoch', Y_label='Accuracy', color='skyblue', name="accuracy_train.png")
 
 
 class ConfusionAwareLoss(nn.Module):
