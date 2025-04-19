@@ -468,12 +468,18 @@ class MedViT(nn.Module):
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.proj_head = nn.Sequential(
-                        nn.Linear(output_channel, 214),
+                        nn.Linear(output_channel, 512),
                         nn.ReLU(),
 
-                        nn.Linear(214, 16),
+                        nn.Linear(512, 256),
                         nn.ReLU(),
 
+                        nn.Linear(256, 64),
+                        nn.ReLU(),
+                        
+                        nn.Linear(64, 16),
+                        nn.ReLU(),
+                        
                         nn.Linear(16, num_classes)  # Output cuối cùng
                     )
 
