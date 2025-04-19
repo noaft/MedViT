@@ -329,6 +329,7 @@ def main(args):
     log_acc = []
     loss_acc = []
     metrics_history = []  # Track metrics over time
+    log_acc_train = []
     y_true_all = []
     y_pred_all = []
     y_score_all = []  # Store predicted probabilities
@@ -415,6 +416,22 @@ def main(args):
                     'args': args,
                 }, checkpoint_path)
 
+        # Calculate training accuracy
+        model.eval()
+        correct = 0
+        total = 0
+        with torch.no_grad():
+            for images, targets in data_loader_train:
+                images = images.to(device, non_blocking=True)
+                targets = targets.to(device, non_blocking=True)
+                outputs = model(images)
+                _, predicted = torch.max(outputs.data, 1)
+                total += targets.size(0)
+                correct += (predicted == targets).sum().item()
+        train_accuracy = 100 * correct / total
+        print(f"Training accuracy: {train_accuracy:.2f}%")
+        log_acc_train.append(train_accuracy)
+
         test_stats = evaluate(data_loader_val, model, device)
 
         print(f"Accuracy of the network on the {len(dataset_val)} test images: {test_stats['acc1']:.1f}%")
@@ -490,7 +507,8 @@ def main(args):
     
     # Plot loss and accuracy
     Line(loss_acc, Title="Loss", X_label='Epoch', Y_label='Loss', color='skyblue', name="loss.png")
-    Line(log_acc, Title="Accuracy", X_label='Epoch', Y_label='Accuracy', color='skyblue', name="accuracy_test.png")
+    Line(log_acc, Title="Test Accuracy", X_label='Epoch', Y_label='Accuracy', color='skyblue', name="accuracy_test.png")
+    Line(log_acc_train, Title="Train Accuracy", X_label='Epoch', Y_label='Accuracy', color='red', name="accuracy_train.png")
 
 
 class ConfusionAwareLoss(nn.Module):
