@@ -470,9 +470,9 @@ class MedViT(nn.Module):
         self.proj_head = nn.Sequential(
                         nn.Linear(output_channel, 512),
                         nn.ReLU(),
-                        nn.Linear(output_channel, 256),
+                        nn.Linear(512, 256),
                         nn.ReLU(),
-                        nn.Linear(output_channel, 64),
+                        nn.Linear(256, 64),
                         nn.ReLU(),
                         nn.Linear(64, num_classes)  # Output cuối cùng
                     )
