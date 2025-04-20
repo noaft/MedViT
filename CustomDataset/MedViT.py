@@ -472,7 +472,9 @@ class MedViT(nn.Module):
                         nn.ReLU(),
                         nn.Linear(output_channel, 256),
                         nn.ReLU(),
-                        nn.Linear(256, num_classes)  # Output cuối cùng
+                        nn.Linear(output_channel, 64),
+                        nn.ReLU(),
+                        nn.Linear(64, num_classes)  # Output cuối cùng
                     )
 
 
